@@ -31,3 +31,5 @@ use Mix.Config
 
 config :elpushover, api_key: System.get_env("PUSHOVER_API_KEY")
 config :elpushover, user_token: System.get_env("PUSHOVER_USER_TOKEN")
+
+if Mix.env() != :docs, do: import_config("#{Mix.env()}.exs")

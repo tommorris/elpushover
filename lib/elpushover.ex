@@ -28,11 +28,12 @@ defmodule Elpushover do
   """
   @spec notify(String.t(), Elpushover.Notification | none()) :: {atom, HTTPoison.Response}
   def notify(msg, opts \\ %{}) do
+    api_key = get_api_key()
     user_env = Application.get_env(:elpushover, :user_token)
     user_token = Map.get(opts, :user, user_env)
 
     default = [
-      {:token, Application.get_env(:elpushover, :api_key)},
+      {:token, api_key},
       {:user, user_token},
       {:message, msg}
     ]
@@ -49,8 +50,9 @@ defmodule Elpushover do
     Elpushover.Api.post("/1/messages.json", body)
   end
 
-  #def validate(token, device \\ nil) do
-  #end
+  defp get_api_key do
+    Application.get_env(:elpushover, :api_key)
+  end
 
   defp prepare_multipart_notification(fname, contents) do
     args = ((for {key, val} <- contents,

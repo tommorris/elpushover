@@ -31,13 +31,21 @@ defmodule Elpushover do
     api_key = get_api_key()
     user_env = Application.get_env(:elpushover, :user_token)
     user_token = Map.get(opts, :user, user_env)
+    body = prepare_body(api_key, user_token, msg, opts)
 
+    Elpushover.Api.start()
+    Elpushover.Api.post("/1/messages.json", body)
+  end
+
+  #def validate(token, device \\ nil) do
+  #end
+
+  defp prepare_body(api_key, user_token, msg, opts) do
     default = [
       {:token, api_key},
       {:user, user_token},
       {:message, msg}
     ]
-
     args = (default ++ Map.to_list(opts))
     {popped, contents} = Keyword.pop(args, :attachment)
 
@@ -46,8 +54,7 @@ defmodule Elpushover do
       fname -> prepare_multipart_notification(fname, contents)
     end
 
-    Elpushover.Api.start()
-    Elpushover.Api.post("/1/messages.json", body)
+    body
   end
 
   defp get_api_key do

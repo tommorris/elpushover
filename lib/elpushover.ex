@@ -37,8 +37,49 @@ defmodule Elpushover do
     Elpushover.Api.post("/1/messages.json", body)
   end
 
-  #def validate(token, device \\ nil) do
-  #end
+  @doc """
+  Validates a user token against the Pushover API. This enables you to check
+  if a user token is valid, and also retrieve device details.
+
+  Returns status, ValidationResponse and HTTPoison response.
+
+  ## Examples
+
+  Validates using the user token set in the environment variable.
+
+        iex> Elpushover.validate()
+        {:ok, %Elpushover.ValidationResponse{...}, %HTTPoison.Response{...}}
+
+  Validates to check for the existence of a particular device.
+
+        iex> Elpushover.validate("iPad")
+        {:ok, %Elpushover.ValidationResponse{...}, %HTTPoison.Response{...}}
+
+  Validates with custom user token.
+
+        iex> Elpushover.validate(nil, %{user: "1234567890abcdef"})
+        {:ok, %Elpushover.ValidationResponse{...}, %HTTPoison.Response{...}}
+  """
+  def validate(device \\ nil, opts \\ %{}) do
+    api_key = get_api_key()
+    user_env = Application.get_env(:elpushover, :user_token)
+    user_token = Map.get(opts, :user, user_env)
+
+    device_block = case device do
+      nil -> []
+      _ -> [{:device, device}]
+    end
+
+    body = [
+      {:token, api_key},
+      {:user, user_token},
+    ] ++ device_block
+    args = (body ++ Map.to_list(opts))
+
+    Elpushover.Api.start()
+    {status, resp} = Elpushover.Api.post("/1/users/validate.json", {:form, args})
+    {status, resp.body, resp}
+  end
 
   defp prepare_body(api_key, user_token, msg, opts) do
     default = [

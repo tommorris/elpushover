@@ -14,19 +14,19 @@ defmodule Elpushover do
   ## Examples
 
       iex> Elpushover.notify("Oi you!")
-      {:ok, %HTTPoison.Response{...}}
+      {:ok, %Elpushover.NotificationResponse{...}, %HTTPoison.Response{...}}
 
       iex> Elpushover.notify("Message only for my iPad",
         %{device: "iPad"}
       )
-      {:ok, %HTTPoison.Response{...}}
+      {:ok, %Elpushover.NotificationResponse{...}, %HTTPoison.Response{...}}
 
       iex> Elpushover.notify("Message",
         %{user: "1234567890abcdef"}
       )
-      {:ok, %HTTPoison.Response{...}}
+      {:ok, %Elpushover.NotificationResponse{...}, %HTTPoison.Response{...}}
   """
-  @spec notify(String.t(), Elpushover.Notification | none()) :: {atom, HTTPoison.Response}
+  @spec notify(String.t(), Elpushover.Notification | none()) :: {atom, Elpushover.NotificationResponse, HTTPoison.Response}
   def notify(msg, opts \\ %{}) do
     api_key = get_api_key()
     user_env = Application.get_env(:elpushover, :user_token)
@@ -34,7 +34,8 @@ defmodule Elpushover do
     body = prepare_body(api_key, user_token, msg, opts)
 
     Elpushover.Api.start()
-    Elpushover.Api.post("/1/messages.json", body)
+    {status, data} = Elpushover.Api.post("/1/messages.json", body)
+    {status, data.body, data}
   end
 
   @doc """

@@ -1,15 +1,19 @@
 defmodule Elpushover.Api do
   use HTTPoison.Base
 
+  @api "https://api.pushover.net"
+
   def process_request_url(url) do
-    "https://api.pushover.net" <> url
+    @api <> url
   end
 
   def process_response(resp) do
     case resp.request_url do
-      "https://api.pushover.net/1/messages.json" ->
+      @api <> "/1/messages.json" ->
         process_resp(resp, Elpushover.NotificationResponse)
-      _ -> process_generic_resp(resp)
+      @api <> "/1/users/validate.json" ->
+        process_resp(resp, Elpushover.ValidationResponse)
+      _ -> process_resp(resp)
     end
   end
 

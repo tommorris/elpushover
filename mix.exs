@@ -26,7 +26,7 @@ defmodule Elpushover.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:httpoison, "~> 1.5"},
+      {:httpoison, "~> 1.6"},
       {:jason, "~> 1.1"},
       {:ex_doc, "~> 0.19", only: [:dev, :test, :docs], runtime: false},
       {:mock, "~> 0.1.1", only: :test},

@@ -28,9 +28,7 @@ defmodule Elpushover do
   """
   @spec notify(String.t(), Elpushover.Notification | none()) :: {atom, Elpushover.NotificationResponse, HTTPoison.Response}
   def notify(msg, opts \\ %{}) do
-    api_key = get_api_key()
-    user_env = Application.get_env(:elpushover, :user_token)
-    user_token = Map.get(opts, :user, user_env)
+    {api_key, user_token} = get_credentials(opts)
     body = prepare_body(api_key, user_token, msg, opts)
 
     Elpushover.Api.start()
@@ -62,9 +60,7 @@ defmodule Elpushover do
         {:ok, %Elpushover.ValidationResponse{...}, %HTTPoison.Response{...}}
   """
   def validate(device \\ nil, opts \\ %{}) do
-    api_key = get_api_key()
-    user_env = Application.get_env(:elpushover, :user_token)
-    user_token = Map.get(opts, :user, user_env)
+    {api_key, user_token} = get_credentials(opts)
 
     device_block = case device do
       nil -> []
@@ -99,8 +95,29 @@ defmodule Elpushover do
     body
   end
 
+  defp get_credentials(opts) do
+    env_api_key = get_api_key()
+    env_user_token = get_user_token()
+
+    api_key = case (Map.has_key?(opts, :api_key)) do
+      true -> Map.get(opts, :api_key)
+      false -> env_api_key
+    end
+
+    user_token = case (Map.has_key?(opts, :user_token)) do
+      true -> Map.get(opts, :user_token)
+      false -> env_user_token
+    end
+
+    {api_key, user_token}
+  end
+
   defp get_api_key do
     Application.get_env(:elpushover, :api_key)
+  end
+
+  defp get_user_token do
+    Application.get_env(:elpushover, :user_token)
   end
 
   defp prepare_multipart_notification(fname, contents) do
